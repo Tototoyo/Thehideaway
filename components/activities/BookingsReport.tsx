@@ -429,8 +429,9 @@ const BookingsReport: React.FC<BookingsReportProps> = ({ bookings, externalSales
         const totalWalkInRevenue = filteredWalkInGuestsForSummary.reduce((sum, g) => sum + g.amountPaid, 0);
         const totalBookingRevenue = filteredAccommodationBookingsForSummary.reduce((sum, b) => sum + b.amountPaid, 0);
         const totalPlatformPaymentsRevenue = filteredPlatformPaymentsForSummary.reduce((sum, p) => sum + p.amount, 0);
-        const totalAccommodationRevenue = totalWalkInRevenue + totalBookingRevenue;
-        const totalRevenue = totalActivityBookingRevenue + totalExternalSales + totalAccommodationRevenue + totalPlatformPaymentsRevenue;
+        // UPDATED: Platform Payments are now included in Accommodation Revenue
+        const totalAccommodationRevenue = totalWalkInRevenue + totalBookingRevenue + totalPlatformPaymentsRevenue;
+        const totalRevenue = totalActivityBookingRevenue + totalExternalSales + totalAccommodationRevenue;
 
         const totalAbsenceDeductions = (() => {
             if (reportGranularity === 'yearly') {
