@@ -22,76 +22,158 @@ const RoomForm: React.FC<RoomFormProps> = ({ onSubmit, onClose, initialData }) =
   const isEditing = !!initialData;
 
   // State for the form fields
-  const [name, setName] = useState('');
-  const [condition, setCondition] = useState<EntityCondition>(EntityCondition.Excellent);
-  const [maintenanceNotes, setMaintenanceNotes] = useState('');
+  const [name, setName] = useState(initialData?.name || '');
+  const [roomType, setRoomType] = useState<'bungalow' | 'dorm' | 'custom'>('custom');
+  const [condition, setCondition] = useState<EntityCondition>(initialData?.condition || EntityCondition.Excellent);
+  const [maintenanceNotes, setMaintenanceNotes] = useState(initialData?.maintenanceNotes || '');
+  const [numberOfBeds, setNumberOfBeds] = useState(initialData?.beds.length || 1);
 
   useEffect(() => {
     if (initialData) {
-      // We are editing, so set the condition and notes from the existing room data.
+      // We are editing, so set all fields from the existing room data.
+      setName(initialData.name);
       setCondition(initialData.condition);
       setMaintenanceNotes(initialData.maintenanceNotes);
+      setNumberOfBeds(initialData.beds.length);
     } else {
       // We are adding, so reset the form to its default state.
       setName('');
+      setRoomType('custom');
       setCondition(EntityCondition.Excellent);
       setMaintenanceNotes('');
+      setNumberOfBeds(1);
     }
   }, [initialData]);
 
+  const handleRoomTypeChange = (type: 'bungalow' | 'dorm' | 'custom') => {
+    setRoomType(type);
+    if (type === 'bungalow') {
+      setNumberOfBeds(1);
+    } else if (type === 'dorm') {
+      setNumberOfBeds(6);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (isEditing) {
-      // If editing, create an updated room object using the initial data
-      // and overwriting only the fields that were edited.
+      // If editing, update all editable fields including the name
       const updatedRoomData = {
           ...initialData,
+          name: name,
           condition: condition,
           maintenanceNotes: maintenanceNotes,
       };
       onSubmit(updatedRoomData);
     } else {
-      // If adding, create a new room object. The number of beds is not
-      // handled by this form and defaults to zero.
-      onSubmit({ name, condition, maintenanceNotes, beds: [] });
+      // If adding, create a new room with the specified number of beds
+      const beds: Bed[] = Array.from({ length: numberOfBeds }, (_, i) => ({
+        id: `bed-${Date.now()}-${i}`,
+        number: i + 1,
+        status: BedStatus.Ready
+      }));
+      onSubmit({ name, condition, maintenanceNotes, beds });
     }
     onClose();
   };
 
-  // When editing, only "Excellent" and "Needs Repair" are valid conditions.
-  // When adding, all conditions are available.
-  const conditionOptions = isEditing
-    ? [EntityCondition.Excellent, EntityCondition['Needs Repair']]
-    : Object.values(EntityCondition);
-
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {isEditing ? (
-        // When editing, display the name of the room being updated instead of an input field.
-        <p className="text-sm font-medium text-slate-700">
-          Updating maintenance for: <span className="font-bold">{initialData.name}</span>
-        </p>
-      ) : (
-        // When adding a new room, show the name input field.
-        <div>
-          <label htmlFor="roomName" className="block text-sm font-medium text-slate-700">Room Name</label>
-          <input type="text" id="roomName" value={name} onChange={(e) => setName(e.target.value)} required className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-slate-900" />
-        </div>
+      <div>
+        <label htmlFor="roomName" className="block text-sm font-medium text-slate-700">
+          Room Name *
+        </label>
+        <input 
+          type="text" 
+          id="roomName" 
+          value={name} 
+          onChange={(e) => setName(e.target.value)} 
+          required 
+          placeholder="e.g., Bungalow 1, Dorm A, etc."
+          className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-slate-900" 
+        />
+      </div>
+
+      {!isEditing && (
+        <>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Quick Setup (Optional)
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => handleRoomTypeChange('bungalow')}
+                className={`p-3 border rounded-md text-sm font-medium transition-colors ${
+                  roomType === 'bungalow'
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-slate-300 text-slate-700 hover:border-slate-400'
+                }`}
+              >
+                🏠 Bungalow<br/><span className="text-xs">(1 bed)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleRoomTypeChange('dorm')}
+                className={`p-3 border rounded-md text-sm font-medium transition-colors ${
+                  roomType === 'dorm'
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-slate-300 text-slate-700 hover:border-slate-400'
+                }`}
+              >
+                🛏️ Dorm<br/><span className="text-xs">(6 beds)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleRoomTypeChange('custom')}
+                className={`p-3 border rounded-md text-sm font-medium transition-colors ${
+                  roomType === 'custom'
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-slate-300 text-slate-700 hover:border-slate-400'
+                }`}
+              >
+                ⚙️ Custom<br/><span className="text-xs">(choose)</span>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="numberOfBeds" className="block text-sm font-medium text-slate-700">
+              Number of Beds *
+            </label>
+            <input 
+              type="number" 
+              id="numberOfBeds" 
+              min="1"
+              max="20"
+              value={numberOfBeds} 
+              onChange={(e) => setNumberOfBeds(parseInt(e.target.value) || 1)} 
+              required 
+              className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-slate-900" 
+            />
+            <p className="text-xs text-slate-500 mt-1">
+              Beds will be numbered automatically (Bed 1, Bed 2, etc.)
+            </p>
+          </div>
+        </>
       )}
       
       <div>
         <label htmlFor="condition" className="block text-sm font-medium text-slate-700">Condition</label>
         <select id="condition" value={condition} onChange={(e) => setCondition(e.target.value as EntityCondition)} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md text-slate-900">
-          {conditionOptions.map(c => <option key={c} value={c}>{c}</option>)}
+          {Object.values(EntityCondition).map(c => <option key={c} value={c}>{c}</option>)}
         </select>
       </div>
+      
       <div>
         <label htmlFor="maintenanceNotes" className="block text-sm font-medium text-slate-700">Maintenance Notes</label>
-        <textarea id="maintenanceNotes" value={maintenanceNotes} onChange={(e) => setMaintenanceNotes(e.target.value)} rows={3} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-slate-900"></textarea>
+        <textarea id="maintenanceNotes" value={maintenanceNotes} onChange={(e) => setMaintenanceNotes(e.target.value)} rows={3} placeholder="Any maintenance or special notes..." className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-slate-900"></textarea>
       </div>
+      
       <div className="flex justify-end space-x-2 pt-4">
         <button type="button" onClick={onClose} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300">Cancel</button>
-        <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">{isEditing ? 'Update' : 'Add Room'}</button>
+        <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">{isEditing ? 'Update Room' : 'Add Room'}</button>
       </div>
     </form>
   );
@@ -244,6 +326,17 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ rooms, onAddRoom, onUpd
     return list;
   }, [rooms]);
 
+  // Sort rooms naturally (Bungalow 1, 2, 3... instead of 1, 10, 2, 3...)
+  const sortedRooms = useMemo(() => {
+    return [...rooms].sort((a, b) => {
+      // Natural sorting for room names with numbers
+      return a.name.localeCompare(b.name, undefined, { 
+        numeric: true, 
+        sensitivity: 'base' 
+      });
+    });
+  }, [rooms]);
+
   const handlePrint = () => {
     window.print();
   };
@@ -328,7 +421,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ rooms, onAddRoom, onUpd
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {rooms.map((room) => (
+        {sortedRooms.map((room) => (
           <div key={room.id} className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col">
             <div className="p-4 border-b">
               <div className="flex justify-between items-start">
