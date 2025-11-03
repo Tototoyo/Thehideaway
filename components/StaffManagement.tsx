@@ -322,7 +322,7 @@ const SalaryAdvanceForm: React.FC<SalaryAdvanceFormProps> = ({ onSubmit, onClose
 
 
 
-type StaffSubView = 'employees' | 'shifts' | 'tasks' | 'absences' | 'advances';
+type StaffSubView = 'employees' | 'details' | 'shifts' | 'tasks' | 'absences' | 'advances';
 
 interface StaffManagementProps {
   staff: Staff[];
@@ -474,6 +474,7 @@ export const StaffManagement: React.FC<StaffManagementProps> = (props) => {
 
     const TABS: { id: StaffSubView; label: string }[] = [
         { id: 'employees', label: 'Employees' },
+        { id: 'details', label: 'Employee Details' },
         { id: 'shifts', label: 'Shift Schedule' },
         { id: 'tasks', label: 'Task Board' },
         { id: 'absences', label: 'Absence Tracking' },
@@ -598,6 +599,156 @@ export const StaffManagement: React.FC<StaffManagementProps> = (props) => {
                             </tbody>
                         </table>
                     </div>
+                </div>
+            )}
+            
+            {activeTab === 'details' && (
+                <div>
+                    <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <p className="text-sm text-blue-800">
+                            <strong>Employee Details:</strong> View complete information for all employees including contact details, emergency contacts, and ID photos.
+                        </p>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="md:hidden space-y-4">
+                        {staff.map(s => (
+                            <div key={s.id} className="bg-white rounded-lg shadow-md p-4 space-y-3">
+                                <div className="flex justify-between items-start border-b pb-3">
+                                    <div>
+                                        <h3 className="font-bold text-lg text-slate-800">{s.name}</h3>
+                                        <p className="text-sm text-slate-600">{s.role} • {s.employeeId}</p>
+                                    </div>
+                                    <button onClick={() => handleOpenStaffModal(s)} className="text-blue-600 hover:text-blue-700">
+                                        <EditIcon />
+                                    </button>
+                                </div>
+                                
+                                {/* Basic Info */}
+                                <div className="space-y-2 text-sm">
+                                    <div>
+                                        <span className="font-semibold text-slate-700">Email/Contact:</span>
+                                        <p className="text-slate-600">{s.contact}</p>
+                                    </div>
+                                    {s.phone && (
+                                        <div>
+                                            <span className="font-semibold text-slate-700">📱 Phone:</span>
+                                            <p className="text-slate-600">{s.phone}</p>
+                                        </div>
+                                    )}
+                                    {s.thaiId && (
+                                        <div>
+                                            <span className="font-semibold text-slate-700">🆔 Thai ID:</span>
+                                            <p className="text-slate-600">{s.thaiId}</p>
+                                        </div>
+                                    )}
+                                    {s.birthday && (
+                                        <div>
+                                            <span className="font-semibold text-slate-700">🎂 Birthday:</span>
+                                            <p className="text-slate-600">{new Date(s.birthday).toLocaleDateString()}</p>
+                                        </div>
+                                    )}
+                                    {s.address && (
+                                        <div>
+                                            <span className="font-semibold text-slate-700">🏠 Address:</span>
+                                            <p className="text-slate-600 whitespace-pre-wrap">{s.address}</p>
+                                        </div>
+                                    )}
+                                    {s.emergencyContact && (
+                                        <div>
+                                            <span className="font-semibold text-slate-700">🚨 Emergency Contact:</span>
+                                            <p className="text-slate-600">{s.emergencyContact}</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* ID Photo */}
+                                {s.idPhotoUrl && (
+                                    <div className="border-t pt-3">
+                                        <span className="font-semibold text-slate-700 text-sm">📷 ID Photo:</span>
+                                        <img src={s.idPhotoUrl} alt={`${s.name} ID`} className="mt-2 w-full max-w-xs rounded-md border border-slate-300" />
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Desktop View */}
+                    <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {staff.map(s => (
+                            <div key={s.id} className="bg-white rounded-lg shadow-md p-5 space-y-4 hover:shadow-lg transition-shadow">
+                                <div className="flex justify-between items-start border-b pb-3">
+                                    <div>
+                                        <h3 className="font-bold text-lg text-slate-800">{s.name}</h3>
+                                        <p className="text-sm text-slate-600">{s.role}</p>
+                                        <p className="text-xs text-slate-500 mt-1">ID: {s.employeeId}</p>
+                                    </div>
+                                    <button onClick={() => handleOpenStaffModal(s)} className="text-blue-600 hover:text-blue-700">
+                                        <EditIcon />
+                                    </button>
+                                </div>
+                                
+                                {/* ID Photo */}
+                                {s.idPhotoUrl && (
+                                    <div className="flex justify-center">
+                                        <img src={s.idPhotoUrl} alt={`${s.name} ID`} className="h-32 w-auto rounded-md border border-slate-300 object-cover" />
+                                    </div>
+                                )}
+                                
+                                {/* Contact Information */}
+                                <div className="space-y-2 text-sm">
+                                    <h4 className="font-semibold text-slate-700 text-base mb-2">Contact Information</h4>
+                                    <div>
+                                        <span className="text-slate-500">Email:</span>
+                                        <p className="text-slate-700">{s.contact}</p>
+                                    </div>
+                                    {s.phone && (
+                                        <div>
+                                            <span className="text-slate-500">📱 Phone:</span>
+                                            <p className="text-slate-700">{s.phone}</p>
+                                        </div>
+                                    )}
+                                    {s.birthday && (
+                                        <div>
+                                            <span className="text-slate-500">🎂 Birthday:</span>
+                                            <p className="text-slate-700">{new Date(s.birthday).toLocaleDateString()}</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Additional Details */}
+                                {(s.thaiId || s.address || s.emergencyContact) && (
+                                    <div className="space-y-2 text-sm border-t pt-3">
+                                        <h4 className="font-semibold text-slate-700 text-base mb-2">Additional Details</h4>
+                                        {s.thaiId && (
+                                            <div>
+                                                <span className="text-slate-500">🆔 Thai ID:</span>
+                                                <p className="text-slate-700">{s.thaiId}</p>
+                                            </div>
+                                        )}
+                                        {s.address && (
+                                            <div>
+                                                <span className="text-slate-500">🏠 Address:</span>
+                                                <p className="text-slate-700 whitespace-pre-wrap">{s.address}</p>
+                                            </div>
+                                        )}
+                                        {s.emergencyContact && (
+                                            <div>
+                                                <span className="text-slate-500">🚨 Emergency:</span>
+                                                <p className="text-slate-700">{s.emergencyContact}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    {staff.length === 0 && (
+                        <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+                            <p className="text-slate-500">No employees found. Add your first employee to see details here.</p>
+                        </div>
+                    )}
                 </div>
             )}
             
