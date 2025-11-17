@@ -158,7 +158,12 @@ export const deleteSalaryAdvance = async (id: string): Promise<void> => {
 // UTILITY RECORDS
 // ======================
 export const fetchUtilityRecords = async (): Promise<UtilityRecord[]> => {
-  const { data, error } = await supabase.from('utility_records').select('*').order('date', { ascending: false });
+  const { data, error } = await supabase
+    .from('utility_records')
+    .select('*')
+    .order('date', { ascending: false })
+    .limit(100);
+  
   if (error) throw error;
   return toCamelCase(data) as UtilityRecord[];
 };
