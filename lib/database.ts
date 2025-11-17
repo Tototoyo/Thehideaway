@@ -161,6 +161,9 @@ export const fetchUtilityRecords = async (): Promise<UtilityRecord[]> => {
   const { data, error } = await supabase.rpc('get_utility_records_simple');
   
   if (error) throw error;
+  
+  console.log('Data received:', data); // ADD THIS LINE
+  
   return toCamelCase(data) as UtilityRecord[];
 };
 
