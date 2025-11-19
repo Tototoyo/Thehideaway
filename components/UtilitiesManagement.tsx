@@ -425,8 +425,17 @@ const UtilitiesManagement: React.FC<UtilitiesManagementProps> = ({ records, onAd
             </Modal>
             
             <Modal isOpen={!!viewingBill} onClose={() => setViewingBill(null)} title="View Bill">
-                {viewingBill && <img src={viewingBill} alt="Utility bill" className="w-full h-auto rounded-md" />}
-            </Modal>
+    {viewingBill && (
+        <img 
+            src={viewingBill} 
+            alt="Utility bill" 
+            className="w-full h-auto rounded-md"
+            onError={(e) => {
+                e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23f1f5f9" width="400" height="300"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" fill="%2394a3b8" font-size="18"%3EImage not available%3C/text%3E%3C/svg%3E';
+            }}
+        />
+    )}
+</Modal>
 
             {isAdmin && (
                 <Modal isOpen={isCategoryModalOpen} onClose={() => setIsCategoryModalOpen(false)} title="Manage Utility Categories">
